@@ -5,7 +5,7 @@ const (
 	CodeErrUnknownBucket
 	CodeErrInvalidMimeType
 	CodeErrDetectMimeType
-	CodeErrMaxExceedFileSize
+	CodeErrExceedMaxFileSize
 	CodeErrCreateDir
 	CodeErrCreateFile
 	CodeErrOpenFile

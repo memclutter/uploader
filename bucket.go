@@ -19,7 +19,7 @@ type Bucket struct {
 
 func (b *Bucket) Upload(multipartFile *multipart.FileHeader) Result {
 	if multipartFile.Size > b.MaxFileSize {
-		return Result{Code: CodeErrMaxExceedFileSize}
+		return Result{Code: CodeErrExceedMaxFileSize}
 	}
 
 	src, err := multipartFile.Open()
