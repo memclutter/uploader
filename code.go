@@ -4,6 +4,7 @@ const (
 	CodeOk = iota
 	CodeErrUnknownBucket
 	CodeErrInvalidMimeType
+	CodeErrDetectMimeType
 	CodeErrMaxExceedFileSize
 	CodeErrCreateDir
 	CodeErrCreateFile

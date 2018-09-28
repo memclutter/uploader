@@ -18,15 +18,22 @@ type Bucket struct {
 }
 
 func (b *Bucket) Upload(multipartFile *multipart.FileHeader) Result {
-	// TODO: Read real mime type
-	mimeType := multipartFile.Header.Get("Content-Type")
+	if multipartFile.Size > b.MaxFileSize {
+		return Result{Code: CodeErrMaxExceedFileSize}
+	}
+
+	src, err := multipartFile.Open()
+	if err != nil {
+		return Result{Code: CodeErrOpenFile}
+	}
+
+	mimeType, err := DetectContentType(src)
+	if err != nil {
+		return Result{Code: CodeErrDetectMimeType}
+	}
 
 	if !b.CheckMimeType(mimeType) {
 		return Result{Code: CodeErrInvalidMimeType}
-	}
-
-	if multipartFile.Size > b.MaxFileSize {
-		return Result{Code: CodeErrMaxExceedFileSize}
 	}
 
 	// TODO: generate filename (random or original)
@@ -43,11 +50,6 @@ func (b *Bucket) Upload(multipartFile *multipart.FileHeader) Result {
 	dst, err := os.Create(filePath)
 	if err != nil {
 		return Result{Code: CodeErrCreateFile}
-	}
-
-	src, err := multipartFile.Open()
-	if err != nil {
-		return Result{Code: CodeErrOpenFile}
 	}
 
 	_, err = io.Copy(dst, src)
