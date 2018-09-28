@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-func DetectContentType(file io.ReadSeeker) (string, error) {
+func detectContentType(file io.ReadSeeker) (string, error) {
 	buffer := make([]byte, 512)
 	_, err := file.Read(buffer)
 	if err != nil {
@@ -21,9 +21,9 @@ func DetectContentType(file io.ReadSeeker) (string, error) {
 	return http.DetectContentType(buffer), nil
 }
 
-func GenerateRandomFileName(contentType string) (string, error) {
-	name := GenerateRandomString(16)
-	ext, err := DetectFileExtension(contentType)
+func generateRandomFileName(contentType string) (string, error) {
+	name := generateRandomString(16)
+	ext, err := detectFileExtension(contentType)
 	if err != nil {
 		return "", err
 	}
@@ -31,13 +31,13 @@ func GenerateRandomFileName(contentType string) (string, error) {
 	return name + ext, nil
 }
 
-func GenerateRandomString(size int) string {
+func generateRandomString(size int) string {
 	buffer := make([]byte, size)
 	rand.Read(buffer)
 	return hex.EncodeToString(buffer)
 }
 
-func DetectFileExtension(contentType string) (string, error) {
+func detectFileExtension(contentType string) (string, error) {
 	extensions, err := mime.ExtensionsByType(contentType)
 	if err != nil {
 		return "", err

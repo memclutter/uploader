@@ -21,7 +21,7 @@ func (u *Uploader) UploadFile(bucketName string, multipartFile *multipart.FileHe
 	if bucket, ok := u.buckets[bucketName]; !ok {
 		return Result{Code: CodeErrUnknownBucket}
 	} else {
-		return bucket.Upload(multipartFile)
+		return bucket.upload(multipartFile)
 	}
 }
 

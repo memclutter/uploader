@@ -17,7 +17,7 @@ type Bucket struct {
 	MaxFileSize int64
 }
 
-func (b *Bucket) Upload(multipartFile *multipart.FileHeader) Result {
+func (b *Bucket) upload(multipartFile *multipart.FileHeader) Result {
 	if multipartFile.Size > b.MaxFileSize {
 		return Result{Code: CodeErrExceedMaxFileSize}
 	}
@@ -27,16 +27,16 @@ func (b *Bucket) Upload(multipartFile *multipart.FileHeader) Result {
 		return Result{Code: CodeErrOpenFile}
 	}
 
-	mimeType, err := DetectContentType(src)
+	mimeType, err := detectContentType(src)
 	if err != nil {
 		return Result{Code: CodeErrDetectMimeType}
 	}
 
-	if !b.CheckMimeType(mimeType) {
+	if !b.checkMimeType(mimeType) {
 		return Result{Code: CodeErrInvalidMimeType}
 	}
 
-	filename, err := GenerateRandomFileName(mimeType)
+	filename, err := generateRandomFileName(mimeType)
 	if err != nil {
 		return Result{Code: CodeErrGenerateFileName}
 	}
@@ -68,7 +68,7 @@ func (b *Bucket) Upload(multipartFile *multipart.FileHeader) Result {
 	}
 }
 
-func (b *Bucket) CheckMimeType(mimeType string) bool {
+func (b *Bucket) checkMimeType(mimeType string) bool {
 	if len(b.MimeTypes) == 0 {
 		return true
 	}
