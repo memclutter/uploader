@@ -36,8 +36,10 @@ func (b *Bucket) Upload(multipartFile *multipart.FileHeader) Result {
 		return Result{Code: CodeErrInvalidMimeType}
 	}
 
-	// TODO: generate filename (random or original)
-	filename := multipartFile.Filename
+	filename, err := GenerateRandomFileName(mimeType)
+	if err != nil {
+		return Result{Code: CodeErrGenerateFileName}
+	}
 
 	dirPath := path.Join(b.BaseDir, b.Dir)
 	if _, err := os.Stat(dirPath); os.IsNotExist(err) {

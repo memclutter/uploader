@@ -6,6 +6,7 @@ const (
 	CodeErrInvalidMimeType
 	CodeErrDetectMimeType
 	CodeErrExceedMaxFileSize
+	CodeErrGenerateFileName
 	CodeErrCreateDir
 	CodeErrCreateFile
 	CodeErrOpenFile
