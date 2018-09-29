@@ -1,62 +1,69 @@
 package uploader
 
 import (
+	"io"
 	"mime/multipart"
+	"os"
 	"path"
 )
 
+// Represent uploader.
 type Uploader struct {
-	baseDir string
-	buckets map[string]Bucket
+	BaseUrl     string
+	BaseDir     string
+	Path        string
+	Dir         string
+	MimeTypes   MimeTypes
+	MaxFileSize int64
 }
 
-func NewUploader(baseDir string) *Uploader {
-	return &Uploader{
-		baseDir: baseDir,
-		buckets: make(map[string]Bucket),
+func (b *Uploader) Upload(multipartFile *multipart.FileHeader) Result {
+	if multipartFile.Size > b.MaxFileSize {
+		return Result{Code: CodeErrExceedMaxFileSize}
 	}
-}
 
-func (u *Uploader) UploadFile(bucketName string, multipartFile *multipart.FileHeader) Result {
-	if bucket, ok := u.buckets[bucketName]; !ok {
-		return Result{Code: CodeErrUnknownBucket}
-	} else {
-		return bucket.upload(multipartFile)
+	src, err := multipartFile.Open()
+	if err != nil {
+		return Result{Code: CodeErrOpenFile}
 	}
-}
 
-func (u *Uploader) UploadForm(form *multipart.Form) (resultSet map[string][]Result) {
-	resultSet = make(map[string][]Result)
+	mimeType, err := detectContentType(src)
+	if err != nil {
+		return Result{Code: CodeErrDetectMimeType}
+	}
 
-	for bucketName, multipartFiles := range form.File {
-		resultSet[bucketName] = make([]Result, len(multipartFiles))
+	if !b.MimeTypes.Check(mimeType) {
+		return Result{Code: CodeErrInvalidMimeType}
+	}
 
-		for i, multipartFile := range multipartFiles {
-			resultSet[bucketName][i] = u.UploadFile(bucketName, multipartFile)
+	filename, err := generateRandomFileName(mimeType)
+	if err != nil {
+		return Result{Code: CodeErrGenerateFileName}
+	}
+
+	dirPath := path.Join(b.BaseDir, b.Dir)
+	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
+		if err = os.MkdirAll(dirPath, 0755); err != nil {
+			return Result{Code: CodeErrCreateDir}
 		}
 	}
 
-	return resultSet
-}
-
-// Register new uploader bucket
-func (u *Uploader) RegisterBucket(name string, bucket Bucket) {
-	if bucket.BaseDir == "" {
-		bucket.BaseDir = u.baseDir
+	filePath := path.Join(dirPath, filename)
+	dst, err := os.Create(filePath)
+	if err != nil {
+		return Result{Code: CodeErrCreateFile}
 	}
 
-	if bucket.Dir == "" {
-		bucket.Dir = name
+	_, err = io.Copy(dst, src)
+	if err != nil {
+		return Result{Code: CodeErrCopyFile}
 	}
 
-	if bucket.Path == "" {
-		bucket.Path = path.Join(bucket.Dir)
+	return Result{
+		Code:     CodeOk,
+		Size:     multipartFile.Size,
+		Name:     filename,
+		MimeType: mimeType,
+		Path:     path.Join(b.BaseUrl, b.Path, filename),
 	}
-
-	u.buckets[name] = bucket
-}
-
-// Unregister exists uploader bucket
-func (u *Uploader) UnregisterBucket(name string) {
-	delete(u.buckets, name)
 }
