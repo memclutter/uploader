@@ -5,7 +5,6 @@ import (
 	"mime/multipart"
 	"os"
 	"path"
-	"strings"
 )
 
 // Represent uploader bucket.
@@ -13,7 +12,7 @@ type Bucket struct {
 	Path        string
 	BaseDir     string
 	Dir         string
-	MimeTypes   []string
+	MimeTypes   MimeTypes
 	MaxFileSize int64
 }
 
@@ -32,7 +31,7 @@ func (b *Bucket) upload(multipartFile *multipart.FileHeader) Result {
 		return Result{Code: CodeErrDetectMimeType}
 	}
 
-	if !b.checkMimeType(mimeType) {
+	if !b.MimeTypes.Check(mimeType) {
 		return Result{Code: CodeErrInvalidMimeType}
 	}
 
@@ -66,18 +65,4 @@ func (b *Bucket) upload(multipartFile *multipart.FileHeader) Result {
 		MimeType: mimeType,
 		Path:     path.Join(b.Path, filename),
 	}
-}
-
-func (b *Bucket) checkMimeType(mimeType string) bool {
-	if len(b.MimeTypes) == 0 {
-		return true
-	}
-
-	for _, mmt := range b.MimeTypes {
-		if strings.Compare(mmt, mimeType) == 0 {
-			return true
-		}
-	}
-
-	return false
 }
