@@ -2,7 +2,6 @@ package uploader
 
 const (
 	CodeOk = iota
-	CodeErrUnknownBucket
 	CodeErrInvalidMimeType
 	CodeErrDetectMimeType
 	CodeErrExceedMaxFileSize
