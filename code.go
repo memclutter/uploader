@@ -2,8 +2,8 @@ package uploader
 
 const (
 	CodeOk = iota
-	CodeErrInvalidMimeType
 	CodeErrDetectMimeType
+	CodeErrInvalidMimeType
 	CodeErrExceedMaxFileSize
 	CodeErrGenerateFileName
 	CodeErrCreateDir
